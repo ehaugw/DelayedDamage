@@ -18,9 +18,7 @@ publish:
 	rar a $(modname).rar -ep1 public/*
 
 install:
-	make assemble
-	rm -r -f $(gamepath)/$(pluginpath)/$(modname)
-	cp -u -r public/* $(gamepath)
+	echo "Cannot install helper dll as standalone mod"
 clean:
 	rm -f -r public
 	rm -f $(modname).rar
