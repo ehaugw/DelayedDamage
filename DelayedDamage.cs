@@ -15,13 +15,16 @@ namespace DelayedDamage
     {
 
         public const string GUID = "com.ehaugw.delayeddamage";
-        public const string VERSION = "2.0.0";
+        public const string VERSION = "2.1.0";
         public const string NAME = "Delayed Damage";
 
         public static DelayedDamage Instance;
         
         public StatusEffect DelayedDamageInstance;
+
+        [Obsolete("GetDamageToDelay is deprecated because it would only track one function, please append to GetDamageToDelayList instead to track everything.")]
         public static Func<Character, Character, DamageList, float, float> GetDamageToDelay = delegate (Character character, Character dealer, DamageList damageList, float damage) { return 0; };
+        public static List<Func<Character, Character, DamageList, float, float>> GetDamageToDelayList = new List<Func<Character, Character, DamageList, float, float>> { };
         public static Action<Character, Character, float> OnDelayedDamageTaken = delegate (Character character, Character dealer, float damage) { };
 
         internal void Awake()
@@ -78,7 +81,7 @@ namespace DelayedDamage
         public static void DelaySomeDamage(Character character, Character dealer, ref float damage, DamageList damageList, float knockBack)
         {
 
-            float delayedDamage = Mathf.Clamp(DelayedDamage.GetDamageToDelay(character, dealer, damageList, knockBack), 0, damage);
+            float delayedDamage = Mathf.Clamp(DelayedDamage.GetDamageToDelayList.Select(func => func(character, dealer, damageList, knockBack)).Sum(), 0, damage) + DelayedDamage.GetDamageToDelay(character, dealer, damageList, knockBack);
             if (delayedDamage > 0)
             {
                 damage -= delayedDamage;
