@@ -81,7 +81,9 @@ namespace DelayedDamage
         public static void DelaySomeDamage(Character character, Character dealer, ref float damage, DamageList damageList, float knockBack)
         {
             //we use the deprecated GetDamageToDelay to get delayed damage according to both new and old setup. It should be removed then the deprecated functionality is discontinued entirely
+#pragma warning disable 0618
             float delayedDamage = Mathf.Clamp(DelayedDamage.GetDamageToDelayList.Select(func => func(character, dealer, damageList, knockBack)).Sum(), 0, damage) + DelayedDamage.GetDamageToDelay(character, dealer, damageList, knockBack);
+#pragma warning restore 0618
             if (delayedDamage > 0)
             {
                 damage -= delayedDamage;
