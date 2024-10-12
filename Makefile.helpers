@@ -1,3 +1,5 @@
+MAKEFLAGS += --no-print-directory
+
 gamepath = /mnt/c/Program\ Files\ \(x86\)/Steam/steamapps/common/Outward/Outward_Defed
 pluginpath = BepInEx/plugins
 sideloaderpath = $(pluginpath)/$(modname)/SideLoader
@@ -16,8 +18,97 @@ clean:
 	rm -f resources/manifest.json
 	rm -f README.md
 info:
-	echo Modname: $(modname)
+	@echo Modname: $(modname)
 edit:
 	nvim ../Descriptions/$(modname).py
 readme:
 	(cd ../Descriptions/ && python3 $(modname).py)
+item:
+	mkdir -p public/$(sideloaderpath)/Items/$(NAME)/Textures
+	cp -u $(PREPATH)resources/icons/$(FILENAME).png                      public/$(sideloaderpath)/Items/$(NAME)/Textures/icon.png
+skill:
+	mkdir -p public/$(sideloaderpath)/Items/$(NAME)/Textures
+	cp -u $(PREPATH)resources/icons/$(FILENAME).png                      public/$(sideloaderpath)/Items/$(NAME)/Textures/icon.png
+	cp -u $(PREPATH)resources/icons/$(FILENAME)_small.png                public/$(sideloaderpath)/Items/$(NAME)/Textures/skillicon.png
+itemtextured: MAINTEX ?= $(FILENAME)_main
+itemtextured: GENTEX ?= $(FILENAME)_gen
+itemtextured: NORMTEX ?= $(FILENAME)_norm
+itemtextured: EMISSIONTEX ?= $(FILENAME)_glow
+itemtextured: DETNORMTEX ?= $(FILENAME)_det_norm
+itemtextured: DETMASKTEX ?= $(FILENAME)_det_mask
+itemtextured: SPECCOLORTEX ?= $(FILENAME)_spec_color
+itemtextured: PROPERTIES ?= $(FILENAME)
+itemtextured: GLOWPROPERTIES ?= $(FILENAME)_glow
+itemtextured: FILEPATH ?= resources/textures/
+itemtextured: ICONNAME ?= $(FILENAME)
+itemtextured:
+	@make item NAME="$(NAME)" FILENAME="$(ICONNAME)"
+	mkdir -p public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)
+	@if [ -f $(FILEPATH)$(MAINTEX).png ]; then \
+		echo "cp -u $(FILEPATH)$(MAINTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_MainTex.png" ; \
+		cp -u $(FILEPATH)$(MAINTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_MainTex.png; \
+	fi
+	@if [ -f $(FILEPATH)$(GENTEX).png ]; then \
+		echo "cp -u $(FILEPATH)$(GENTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_GenTex.png" ; \
+		cp -u $(FILEPATH)$(GENTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_GenTex.png; \
+	fi
+	@if [ -f $(FILEPATH)$(NORMTEX).png ]; then \
+		echo "cp -u $(FILEPATH)$(NORMTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_NormTex.png" ; \
+		cp -u $(FILEPATH)$(NORMTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_NormTex.png; \
+	fi
+	@if [ -f $(FILEPATH)$(EMISSIONTEX).png ]; then \
+		echo "cp -u $(FILEPATH)$(EMISSIONTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_EmissionTex.png" ; \
+		cp -u $(FILEPATH)$(EMISSIONTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_EmissionTex.png; \
+	fi
+	@if [ -f $(FILEPATH)$(DETNORMTEX).png ]; then \
+		echo "cp -u $(FILEPATH)$(DETNORMTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_DetNormTex.png" ; \
+		cp -u $(FILEPATH)$(DETNORMTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_DetNormTex.png; \
+	fi
+	@if [ -f $(FILEPATH)$(DETMASKTEX).png ]; then \
+		echo "cp -u $(FILEPATH)$(DETMASKTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_DetMaskTex.png" ; \
+		cp -u $(FILEPATH)$(DETMASKTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_DetMaskTex.png; \
+	fi
+	@if [ -f $(FILEPATH)$(SPECCOLORTEX).png ]; then \
+		echo "cp -u $(FILEPATH)$(SPECCOLORTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_SpecColorTex.png" ; \
+		cp -u $(FILEPATH)$(SPECCOLORTEX).png public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/_SpecColorTex.png; \
+	fi
+	@if [ -f $(FILEPATH)$(PROPERTIES).xml ]; then \
+		echo "cp -u $(FILEPATH)$(PROPERTIES).xml public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/properties.xml" ; \
+		cp -u $(FILEPATH)$(PROPERTIES).xml public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/properties.xml; \
+	fi
+	@if [ -f $(FILEPATH)$(GLOWPROPERTIES).xml ]; then \
+		echo "cp -u $(FILEPATH)$(GLOWPROPERTIES).xml public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/properties.xml" ; \
+		cp -u $(FILEPATH)$(GLOWPROPERTIES).xml public/$(sideloaderpath)/Items/$(NAME)/Textures/$(MATERIALNAME)/properties\ -\ Glow.xml; \
+	fi
+
+texture:
+	cp -u $(PREPATH)resources/textures/$(FILENAME).png                public/$(sideloaderpath)/Texture2D/
+basefolders:
+	mkdir -p public/$(sideloaderpath)/Items
+	mkdir -p public/$(sideloaderpath)/Texture2D
+	mkdir -p public/$(sideloaderpath)/AssetBundles
+assetbundle:
+	cp -u $(unityassetbundles)/$(FILENAME)                public/$(sideloaderpath)/AssetBundles/
+publish:
+	make clean
+	make assemble
+	rar a $(modname).rar -ep1 public/*
+	
+	cp -r public/BepInEx thunderstore
+	mv thunderstore/plugins/$(modname)/* thunderstore/plugins
+	rmdir thunderstore/plugins/$(modname)
+	
+	(cd ../Descriptions && python3 $(modname).py)
+	
+	cp -u resources/manifest.json thunderstore/
+	cp -u README.md thunderstore/
+	cp -u resources/icon.png thunderstore/
+	(cd thunderstore && zip -r $(modname)_thunderstore.zip *)
+	cp -u ../tcli/thunderstore.toml thunderstore
+	(cd thunderstore && tcli publish --file $(modname)_thunderstore.zip) || true
+	mv thunderstore/$(modname)_thunderstore.zip .
+install:
+	if [ ! -f omit.txt ]; then make forceinstall; fi
+web:
+	/mnt/c/Program\ Files/Google/Chrome/Application/chrome.exe       "https://thunderstore.io/c/outward/p/ehaugw/$(modname)/" > /dev/null 2>&1 &
+
